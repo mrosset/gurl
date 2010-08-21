@@ -25,7 +25,7 @@ import "path"
 
 func Download(url string, dest string) {
 	_, file := path.Split(url)
-    file =  dest+file
+	file = dest + file
 	C.download(C.CString(url), C.CString("./"+file))
 	println(url)
 }
