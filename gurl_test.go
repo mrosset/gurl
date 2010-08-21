@@ -4,7 +4,7 @@ import "testing"
 
 
 func TestDownload(t *testing.T) {
-    Download("http://curl.haxx.se/download/curl-7.21.1.tar.bz2")
+    Download("http://curl.haxx.se/download/curl-7.21.1.tar.bz2", "./")
 }
 
 func TestVersion(t *testing.T) {
