@@ -7,12 +7,12 @@ import (
 	"path"
 )
 
-type Gurl struct {
+type Client struct {
 	client *http.Client
 }
 
 
-func (v *Gurl) Download(destdir string, url string) os.Error {
+func (v *Client) Download(destdir string, url string) os.Error {
 	if v.client == nil {
 		v.client = new(http.Client)
 	}
