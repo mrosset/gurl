@@ -21,7 +21,7 @@ func (v *Client) Download(destdir string, url string) os.Error {
 		return err
 	}
 	fpath := path.Join(destdir, path.Base(finalurl))
-	f, err := os.Open(fpath, os.O_WRONLY|os.O_CREAT, 0644)
+	f, err := os.Create(fpath)
 	defer f.Close()
 	_, err = io.Copy(f, r.Body)
 	if err != nil {
