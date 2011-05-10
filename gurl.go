@@ -11,7 +11,6 @@ type Client struct {
 	client *http.Client
 }
 
-
 func (v *Client) Download(destdir string, url string) os.Error {
 	if v.client == nil {
 		v.client = new(http.Client)
