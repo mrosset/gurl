@@ -5,8 +5,9 @@ import (
 )
 
 func TestDownload(t *testing.T) {
+	url := "http://localhost/gcc-go-snapshot-4.7.20110423-1-x86_64.pkg.tar.xz"
 	gurl := &Client{}
-	if err := gurl.Download("/tmp/", "http://localhost/linux-2.6.38.tar.bz2"); err != nil {
+	if err := gurl.Download("./", url); err != nil {
 		t.Errorf("Download : %v", err)
 	}
 }

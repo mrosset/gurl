@@ -1,11 +1,13 @@
-include $(GOROOT)/src/Make.inc
+gurlcmd:
+	make -C cmd
 
-TARG=gurl
-GOFILES=gurl.go
-GOFMT=gofmt -l -w
+gurlpkg:
+	make -C pkg	
 
+install:
+	make -C pkg install
+	make -C cmd install
 
-format:
-	    ${GOFMT} .
-
-include $(GOROOT)/src/Make.pkg
+clean:
+	make -C pkg clean
+	make -C cmd clean
