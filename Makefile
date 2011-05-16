@@ -4,7 +4,7 @@ gurlcmd:
 gurlpkg:
 	make -C pkg	
 
-install:
+install: clean
 	make -C pkg install
 	make -C cmd install
 

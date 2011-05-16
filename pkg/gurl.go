@@ -83,10 +83,7 @@ func (v *Client) Download(destdir string, url string) os.Error {
 	_ = response.ContentLength / int64(winsize.Col)
 	var tdown int64
 	start := time.Seconds()
-	start = start
-	println("started", start)
-	//start := time.Seconds()
-	tick := time.NewTicker(1e09)
+	//var lastTick int64
 	for {
 		b := make([]byte, 1024)
 		read, err := response.Body.Read(b)
@@ -100,28 +97,41 @@ func (v *Client) Download(destdir string, url string) os.Error {
 		if err != nil {
 			return err
 		}
+		time.Sleep(1e04)
 		tdown += int64(read)
+		var bps int64
+		tick := time.Seconds() - start
+		//if tick > lastTick {
+		//lastTick = tick
+		if tick != 0 {
+			bps = tdown / tick
+		}
+		//}
 		frac := float32(tdown) / float32(response.ContentLength)
 		percent := tdown * 100 / response.ContentLength
-		spercent := fmt.Sprintf("\r%v%% ", percent)
-		line := spercent
-		progress := int(frac*float32(winsize.Col)) - len(line) + 1
+		tail := fmt.Sprintf("] %vKB/s %v%% ", bps/1024, percent)
+		progress := int(frac*float32(winsize.Col)) - len(tail)
+		var line string
+		line += "["
 		for i := 0; i < progress; i++ {
 			line += "#"
 		}
-		l := line
-		for i := 0; i < int(winsize.Col)-len(l); i++ {
-			line += " "
+		//l := line
+		for i := 0; i < int(winsize.Col)-len(tail); i++ {
+			//line += " "
 		}
-		fprintf(os.Stderr, "%v", line)
-		go func() {
-			select {
-			case <-tick.C:
-				println("tick")
-			}
-		}()
+		line += tail
+		if len(line) > int(winsize.Col) {
+			//println("line is ",len(line),"should be",int(winsize.Col))
+			//return os.NewError("output formatting error")
+			t := len(line) - int(winsize.Col)
+			line = line[t:]
+		}
+		//println(tdown/tick)
+		//if bps != 0 {
+		printf("\r%v", line)
+		//}
 	}
-	tick.Stop()
 	println()
 	return err
 }
