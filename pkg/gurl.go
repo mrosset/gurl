@@ -2,11 +2,13 @@ package gurl
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"http"
 	"os"
 	"path"
 	term "github.com/kless/go-term/term"
+	"io"
 	"time"
 )
 
@@ -94,23 +96,18 @@ func doProgress(start, downloaded, totalDownload int64, file string) {
 	frac := float32(downloaded) / float32(totalDownload)
 	percent := downloaded * 100 / totalDownload
 	tail := fmt.Sprintf("] %vKB/s %v%% %v ", bps/1024, percent, file)
-	var line string
+	line := new(bytes.Buffer)
+	line.WriteString("\r[")
 	progress := int(frac * (float32(winsize.Col) - float32(len(tail)) - 1))
 	for i := 0; i < progress; i++ {
-		line += "#"
+		line.WriteByte('#')
 	}
-	l := line
-	for i := 0; i < int(winsize.Col)-len(tail)-len(l)-1; i++ {
-		line += " "
+	llen := len(line.Bytes())
+	for i := 0; i < int(winsize.Col)-len(tail)-llen; i++ {
+		line.WriteByte(' ')
 	}
-	line += tail
-	if len(line) > int(winsize.Col) {
-		println("line is ", len(line), "should be", int(winsize.Col))
-		os.Exit(0)
-		//t := len(line) - int(winsize.Col)
-		//line = line[t:]
-	}
-	fmt.Fprintf(buf, "\r[%v", line)
+	line.WriteString(tail)
+	io.Copy(buf, line)
 	buf.Flush()
 }
 
