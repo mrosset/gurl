@@ -16,8 +16,8 @@ var (
 	printf  = fmt.Printf
 	fprintf = fmt.Fprintf
 	println = fmt.Println
-	debug   = false
-	buf     = bufio.NewWriter(os.Stdout)
+	Debug   = false
+	buf     = bufio.NewWriter(os.Stderr)
 )
 
 type Client struct {
@@ -33,7 +33,7 @@ func (v *Client) Download(destdir string, url string) os.Error {
 	if err != nil {
 		return err
 	}
-	if debug {
+	if Debug {
 		b, err := http.DumpRequest(request, false)
 		if err != nil {
 			return err
@@ -48,7 +48,7 @@ func (v *Client) Download(destdir string, url string) os.Error {
 		return os.NewError("Error status " + response.Status)
 	}
 	defer response.Body.Close()
-	if debug {
+	if Debug {
 		b, err := http.DumpResponse(response, false)
 		if err != nil {
 			return err
