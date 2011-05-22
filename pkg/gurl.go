@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	term "github.com/kless/go-term/term"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -91,13 +92,19 @@ func (v *Client) Download(destdir string, url string) os.Error {
 func doProgress(start, downloaded, totalDownload int64, file string) {
 	winsize, _ := term.GetWinsize()
 	var (
-		width    int64 = int64(winsize.Col)
+		width    int64 = (int64(winsize.Col) / 2) - 9
 		percent  int64 = (downloaded * 100) / totalDownload
 		progress int64 = (width * percent) / 100
+		bps      int64
 	)
+	tick := time.Seconds() - start
+	if tick > 0 {
+		bps = downloaded / tick
+	}
 	bar := strings.Repeat("#", int(progress))
 	pad := strings.Repeat(" ", int(width)-int(progress))
-	fmt.Fprintf(buf, "\r%s%s", bar, pad)
+	stats := fmt.Sprintf("%3.3s%% %4.4vKb/s", strconv.Itoa64(percent), strconv.Itoa64(bps/1024))
+	fmt.Fprintf(buf, "\r%-*.*s [%s%s] %-s", int(width), int(width), file, bar, pad, stats)
 	buf.Flush()
 }
 
