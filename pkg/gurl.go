@@ -2,13 +2,12 @@ package gurl
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"http"
 	"os"
 	"path"
 	term "github.com/kless/go-term/term"
-	"io"
+	"strings"
 	"time"
 )
 
@@ -22,12 +21,15 @@ var (
 
 type Client struct {
 	client         *http.Client
-	progressHandle func(int64, int64, int64, chan int)
+	ProgressHandle func(int64, int64, int64, string)
 }
 
 func (v *Client) Download(destdir string, url string) os.Error {
 	if v.client == nil {
 		v.client = new(http.Client)
+	}
+	if v.ProgressHandle == nil {
+		v.ProgressHandle = doProgress
 	}
 	request, err := buildRequest("GET", url)
 	if err != nil {
@@ -70,11 +72,11 @@ func (v *Client) Download(destdir string, url string) os.Error {
 		downloaded += int64(read)
 		select {
 		case <-tick:
-			doProgress(start, downloaded, response.ContentLength, fpath)
+			v.ProgressHandle(start, downloaded, response.ContentLength, fpath)
 		default:
 		}
 		if err == os.EOF {
-			doProgress(start, downloaded, response.ContentLength, fpath)
+			v.ProgressHandle(start, downloaded, response.ContentLength, fpath)
 			break
 		}
 		_, err = f.Write(b[0:read])
@@ -88,26 +90,14 @@ func (v *Client) Download(destdir string, url string) os.Error {
 
 func doProgress(start, downloaded, totalDownload int64, file string) {
 	winsize, _ := term.GetWinsize()
-	var bps int64
-	tick := time.Seconds() - start
-	if tick != 0 {
-		bps = downloaded / tick
-	}
-	frac := float32(downloaded) / float32(totalDownload)
-	percent := downloaded * 100 / totalDownload
-	tail := fmt.Sprintf("] %vKB/s %v%% %v ", bps/1024, percent, file)
-	line := new(bytes.Buffer)
-	line.WriteString("\r[")
-	progress := int(frac * (float32(winsize.Col) - float32(len(tail)) - 1))
-	for i := 0; i < progress; i++ {
-		line.WriteByte('#')
-	}
-	llen := len(line.Bytes())
-	for i := 0; i < int(winsize.Col)-len(tail)-llen; i++ {
-		line.WriteByte(' ')
-	}
-	line.WriteString(tail)
-	io.Copy(buf, line)
+	var (
+		width    int64 = int64(winsize.Col)
+		percent  int64 = (downloaded * 100) / totalDownload
+		progress int64 = (width * percent) / 100
+	)
+	bar := strings.Repeat("#", int(progress))
+	pad := strings.Repeat(" ", int(width)-int(progress))
+	fmt.Fprintf(buf, "\r%s%s", bar, pad)
 	buf.Flush()
 }
 

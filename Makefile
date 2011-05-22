@@ -1,8 +1,8 @@
-gurlcmd:
-	make -C cmd
-
 gurlpkg:
 	make -C pkg	
+
+gurlcmd:
+	make -C cmd
 
 install: clean
 	make -C pkg install
