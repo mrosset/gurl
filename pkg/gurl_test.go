@@ -38,11 +38,11 @@ func TestLocal(t *testing.T) {
 }
 
 
-func testRemote(t *testing.T) {
+func TestRemote(t *testing.T) {
 	testfile := "archlinux-2010.05-netinstall-i686.iso"
 	start := time.Seconds()
-	//url := "http://localhost/" + testfile
-	url := "http://mirrors.kernel.org/archlinux/iso/latest/" + testfile
+	url := "http://localhost/" + testfile
+	//url := "http://mirrors.kernel.org/archlinux/iso/latest/" + testfile
 	gurl := new(Client)
 	if err := gurl.Download("./", url); err != nil {
 		t.Errorf("Download : %v", err)

@@ -92,19 +92,19 @@ func (v *Client) Download(destdir string, url string) os.Error {
 func doProgress(start, downloaded, totalDownload int64, file string) {
 	winsize, _ := term.GetWinsize()
 	var (
-		width    int64 = (int64(winsize.Col) / 2) - 9
-		percent  int64 = (downloaded * 100) / totalDownload
-		progress int64 = (width * percent) / 100
-		bps      int64
+		width    int = int((int64(winsize.Col) / 2)) - 9
+		percent  int = int((downloaded * 100) / totalDownload)
+		progress int = int((width * percent) / 100)
+		bps      int
 	)
 	tick := time.Seconds() - start
-	if tick > 0 {
-		bps = downloaded / tick
+	if tick == 0 {
+		tick++
 	}
-	bar := strings.Repeat("#", int(progress))
-	pad := strings.Repeat(" ", int(width)-int(progress))
-	stats := fmt.Sprintf("%3.3s%% %4.4vKb/s", strconv.Itoa64(percent), strconv.Itoa64(bps/1024))
-	fmt.Fprintf(buf, "\r%-*.*s [%s%s] %-s", int(width), int(width), file, bar, pad, stats)
+	bps = int(downloaded / tick)
+	bar := strings.Repeat("#", progress)
+	stats := fmt.Sprintf("%3.3s%% %9.9s", strconv.Itoa(percent), speed(bps))
+	fmt.Fprintf(buf, "\r%-*.*s [%-*s] %s", width, width, file, width, bar, stats)
 	buf.Flush()
 }
 
@@ -121,4 +121,23 @@ func buildRequest(method, url string) (*http.Request, os.Error) {
 		return nil, err
 	}
 	return req, nil
+}
+
+func speed(bint int) string {
+	var (
+		kbyte float32 = float32(1024)
+		b     float32 = float32(bint)
+	)
+	switch {
+	case b < kbyte:
+		return fmt.Sprintf("%vB/s", b)
+	case b < kbyte*1000:
+		return fmt.Sprintf("%5.1fKB/s", b/kbyte)
+	case b < kbyte*kbyte*1000:
+		return fmt.Sprintf("%5.1fMB/s", b/kbyte/kbyte)
+	default:
+		return fmt.Sprintf("%5.1fGB/s", b/kbyte/kbyte/kbyte)
+	}
+	return fmt.Sprintf("%5.1fGB/s", b/kbyte/kbyte/kbyte)
+	return ""
 }
