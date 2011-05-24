@@ -11,3 +11,6 @@ install: clean
 clean:
 	make -C pkg clean
 	make -C cmd clean
+
+all: gurlpkg gurlcmd
+

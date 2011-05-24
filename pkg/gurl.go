@@ -25,39 +25,31 @@ type Client struct {
 	ProgressHandle func(int64, int64, int64, string)
 }
 
-func (v *Client) Download(destdir string, url string) os.Error {
+func (v *Client) Download(destdir string, url string) (err os.Error) {
+	defer func() {
+		if recover() != nil {
+		}
+	}()
 	if v.client == nil {
 		v.client = new(http.Client)
 	}
 	if v.ProgressHandle == nil {
 		v.ProgressHandle = doProgress
 	}
-	request, err := buildRequest("GET", url)
+	req, err := buildRequest("GET", url)
 	if err != nil {
 		return err
 	}
-	if Debug {
-		b, err := http.DumpRequest(request, false)
-		if err != nil {
-			return err
-		}
-		os.Stderr.Write(b)
-	}
-	response, err := v.client.Do(request)
+	debugRequest(req)
+	res, err := v.client.Do(req)
 	if err != nil {
 		return err
 	}
-	if response.StatusCode != 200 {
-		return os.NewError("Error status " + response.Status)
+	if res.StatusCode != 200 {
+		return os.NewError("Error status " + res.Status)
 	}
-	defer response.Body.Close()
-	if Debug {
-		b, err := http.DumpResponse(response, false)
-		if err != nil {
-			return err
-		}
-		os.Stderr.Write(b)
-	}
+	defer res.Body.Close()
+	debugResponse(res)
 	fpath := path.Join(destdir, path.Base(url))
 	f, err := os.Create(fpath)
 	defer f.Close()
@@ -66,18 +58,24 @@ func (v *Client) Download(destdir string, url string) os.Error {
 	tick := time.Tick(1e09)
 	for {
 		b := make([]byte, 1024)
-		read, err := response.Body.Read(b)
+		read, err := res.Body.Read(b)
 		if err != nil && err != os.EOF {
 			return err
 		}
 		downloaded += int64(read)
 		select {
 		case <-tick:
-			v.ProgressHandle(start, downloaded, response.ContentLength, fpath)
+			if res.ContentLength > 0 {
+				v.ProgressHandle(start, downloaded, res.ContentLength, fpath)
+			}
 		default:
 		}
 		if err == os.EOF {
-			v.ProgressHandle(start, downloaded, response.ContentLength, fpath)
+			if res.ContentLength > 0 {
+				v.ProgressHandle(start, downloaded, res.ContentLength, fpath)
+			} else {
+				fmt.Printf("%v done.\n", fpath)
+			}
 			break
 		}
 		_, err = f.Write(b[0:read])
@@ -125,19 +123,31 @@ func buildRequest(method, url string) (*http.Request, os.Error) {
 
 func speed(bint int) string {
 	var (
-		kbyte float32 = float32(1024)
-		b     float32 = float32(bint)
+		b float32 = float32(bint)
 	)
 	switch {
-	case b < kbyte:
+	case b < 1024:
 		return fmt.Sprintf("%vB/s", b)
-	case b < kbyte*1000:
-		return fmt.Sprintf("%5.1fKB/s", b/kbyte)
-	case b < kbyte*kbyte*1000:
-		return fmt.Sprintf("%5.1fMB/s", b/kbyte/kbyte)
+	case b < 1024*1000:
+		return fmt.Sprintf("%5.1fKB/s", b/1024)
+	case b < 1024*1024*1000:
+		return fmt.Sprintf("%5.1fMB/s", b/1024/1024)
 	default:
-		return fmt.Sprintf("%5.1fGB/s", b/kbyte/kbyte/kbyte)
+		return fmt.Sprintf("%5.1fGB/s", b/1024/1024/1024)
 	}
-	return fmt.Sprintf("%5.1fGB/s", b/kbyte/kbyte/kbyte)
-	return ""
+	return fmt.Sprintf("%5.1fGB/s", b/1024/1024/1024)
+}
+
+func debugRequest(req *http.Request) {
+	if Debug {
+		b, _ := http.DumpRequest(req, false)
+		os.Stderr.Write(b)
+	}
+}
+
+func debugResponse(res *http.Response) {
+	if Debug {
+		b, _ := http.DumpResponse(res, false)
+		os.Stderr.Write(b)
+	}
 }
