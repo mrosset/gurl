@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"url"
 )
 
 var (
@@ -25,7 +26,7 @@ type Client struct {
 	ProgressHandle func(int64, int64, int64, string)
 }
 
-func (v *Client) Download(destdir string, url string) (err os.Error) {
+func (v *Client) Download(destdir string, rawurl string) (err os.Error) {
 	defer func() {
 		if recover() != nil {
 		}
@@ -36,7 +37,7 @@ func (v *Client) Download(destdir string, url string) (err os.Error) {
 	if v.ProgressHandle == nil {
 		v.ProgressHandle = doProgress
 	}
-	req, err := buildRequest("GET", url)
+	req, err := buildRequest("GET", rawurl)
 	if err != nil {
 		return err
 	}
@@ -50,7 +51,7 @@ func (v *Client) Download(destdir string, url string) (err os.Error) {
 	}
 	defer res.Body.Close()
 	debugResponse(res)
-	fpath := path.Join(destdir, path.Base(url))
+	fpath := path.Join(destdir, path.Base(rawurl))
 	f, err := os.Create(fpath)
 	defer f.Close()
 	var downloaded int64
@@ -129,7 +130,7 @@ func buildRequest(method, url string) (*http.Request, os.Error) {
 	req.Header = http.Header{}
 	req.Header.Set("Connection", "keep-alive")
 	req.Method = method
-	req.URL, err = http.ParseURL(url)
+	req.URL, err = url.Parse(rawurl)
 	if err != nil {
 		return nil, err
 	}
