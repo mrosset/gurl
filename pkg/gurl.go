@@ -87,7 +87,7 @@ func (v *Client) Download(destdir string, url string) (err os.Error) {
 	return err
 }
 
-func doProgress(start, downloaded, totalDownload int64, file string) {
+func doProgressBar(start, downloaded, totalDownload int64, file string) {
 	winsize, _ := term.GetWinsize()
 	var (
 		width    int = int((int64(winsize.Col) / 2)) - 9
@@ -105,6 +105,21 @@ func doProgress(start, downloaded, totalDownload int64, file string) {
 	fmt.Fprintf(buf, "\r%-*.*s [%-*s] %s", width, width, file, width, bar, stats)
 	buf.Flush()
 }
+
+func doProgress(start, downloaded, totalDownload int64, file string) {
+	var (
+		percent int = int((downloaded * 100) / totalDownload)
+		bps     int
+	)
+	tick := time.Seconds() - start
+	if tick == 0 {
+		tick++
+	}
+	bps = int(downloaded / tick)
+	fmt.Fprintf(buf, "\r%-40.40s %3.3s%% %v", file, strconv.Itoa(percent), speed(bps))
+	buf.Flush()
+}
+// Receiving objects:   2% (41013/2050606), 14.90 MiB | 1.03 MiB/s
 
 func buildRequest(method, url string) (*http.Request, os.Error) {
 	var err os.Error
