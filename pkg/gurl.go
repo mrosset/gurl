@@ -2,15 +2,19 @@ package gurl
 
 import (
 	"bufio"
+	"errors"
+	"exp/terminal"
 	"fmt"
-	"http"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"path"
-	term "github.com/kless/go-term/term"
 	"strconv"
 	"strings"
 	"time"
-	"url"
 )
 
 var (
@@ -23,10 +27,10 @@ var (
 
 type Client struct {
 	client         *http.Client
-	ProgressHandle func(int64, int64, int64, string)
+	ProgressHandle func(time.Time, int64, int64, string)
 }
 
-func (v *Client) Download(destdir string, rawurl string) (err os.Error) {
+func (v *Client) Download(destdir string, rawurl string) (err error) {
 	defer func() {
 		if recover() != nil {
 		}
@@ -47,7 +51,7 @@ func (v *Client) Download(destdir string, rawurl string) (err os.Error) {
 		return err
 	}
 	if res.StatusCode != 200 {
-		return os.NewError("Error status " + res.Status)
+		return errors.New("Error status " + res.Status)
 	}
 	defer res.Body.Close()
 	debugResponse(res)
@@ -55,12 +59,12 @@ func (v *Client) Download(destdir string, rawurl string) (err os.Error) {
 	f, err := os.Create(fpath)
 	defer f.Close()
 	var downloaded int64
-	start := time.Seconds()
+	start := time.Now()
 	tick := time.Tick(1e09)
 	for {
 		b := make([]byte, 1024)
 		read, err := res.Body.Read(b)
-		if err != nil && err != os.EOF {
+		if err != nil && err != io.EOF {
 			return err
 		}
 		downloaded += int64(read)
@@ -71,7 +75,7 @@ func (v *Client) Download(destdir string, rawurl string) (err os.Error) {
 			}
 		default:
 		}
-		if err == os.EOF {
+		if err == io.EOF {
 			if res.ContentLength > 0 {
 				v.ProgressHandle(start, downloaded, res.ContentLength, fpath)
 			} else {
@@ -88,42 +92,46 @@ func (v *Client) Download(destdir string, rawurl string) (err os.Error) {
 	return err
 }
 
-func doProgressBar(start, downloaded, totalDownload int64, file string) {
-	winsize, _ := term.GetWinsize()
+func doProgressBar(start time.Time, downloaded, totalDownload int64, file string) {
+	twidth, _, err := terminal.GetSize(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 	var (
-		width    int = int((int64(winsize.Col) / 2)) - 9
+		width    int = int((int64(twidth) / 2)) - 9
 		percent  int = int((downloaded * 100) / totalDownload)
 		progress int = int((width * percent) / 100)
 		bps      int
 	)
-	tick := time.Seconds() - start
+	tick := time.Now().Sub(start)
 	if tick == 0 {
 		tick++
 	}
-	bps = int(downloaded / tick)
+	bps = int(downloaded / int64(tick.Seconds()))
 	bar := strings.Repeat("#", progress)
 	stats := fmt.Sprintf("%3.3s%% %9.9s", strconv.Itoa(percent), speed(bps))
 	fmt.Fprintf(buf, "\r%-*.*s [%-*s] %s", width, width, file, width, bar, stats)
 	buf.Flush()
 }
 
-func doProgress(start, downloaded, totalDownload int64, file string) {
+func doProgress(start time.Time, downloaded, totalDownload int64, file string) {
 	var (
 		percent int = int((downloaded * 100) / totalDownload)
 		bps     int
 	)
-	tick := time.Seconds() - start
+	tick := time.Now().Sub(start)
 	if tick == 0 {
 		tick++
 	}
-	bps = int(downloaded / tick)
+	bps = int(downloaded / int64(tick.Seconds()))
 	fmt.Fprintf(buf, "\r%-40.40s %3.3s%% %v", file, strconv.Itoa(percent), speed(bps))
 	buf.Flush()
 }
+
 // Receiving objects:   2% (41013/2050606), 14.90 MiB | 1.03 MiB/s
 
-func buildRequest(method, url string) (*http.Request, os.Error) {
-	var err os.Error
+func buildRequest(method, rawurl string) (*http.Request, error) {
+	var err error
 	req := new(http.Request)
 	req.ProtoMajor = 1
 	req.ProtoMinor = 1
@@ -156,14 +164,14 @@ func speed(bint int) string {
 
 func debugRequest(req *http.Request) {
 	if Debug {
-		b, _ := http.DumpRequest(req, false)
+		b, _ := httputil.DumpRequest(req, false)
 		os.Stderr.Write(b)
 	}
 }
 
 func debugResponse(res *http.Response) {
 	if Debug {
-		b, _ := http.DumpResponse(res, false)
+		b, _ := httputil.DumpResponse(res, false)
 		os.Stderr.Write(b)
 	}
 }

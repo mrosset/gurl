@@ -3,16 +3,15 @@ package gurl
 import (
 	"bytes"
 	"fmt"
-	"http"
-	"http/httptest"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
 )
 
 type testHandler struct {
-
 }
 
 func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -25,28 +24,26 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func TestLocal(t *testing.T) {
 	testfile := "/foobar.tar.gz"
-	start := time.Seconds()
+	start := time.Now()
 	server := httptest.NewServer(&testHandler{})
 	url := server.URL + testfile
 	gurl := new(Client)
 	if err := gurl.Download("./", url); err != nil {
 		t.Errorf("Download : %v", err)
 	}
-	total := time.Seconds() - start
+	total := time.Now().Sub(start)
 	fmt.Println("Finished in", total)
 	server.Close()
 }
 
-
 func TestRemote(t *testing.T) {
-	testfile := "archlinux-2010.05-netinstall-i686.iso"
-	start := time.Seconds()
+	start := time.Now()
 	//url := "http://localhost/" + testfile
-	url := "http://mirrors.kernel.org/archlinux/iso/latest/" + testfile
+	url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/archlinux-2011.08.19-core-dual.iso"
 	gurl := new(Client)
 	if err := gurl.Download("./", url); err != nil {
 		t.Errorf("Download : %v", err)
 	}
-	total := time.Seconds() - start
+	total := time.Now().Sub(start)
 	fmt.Println("Finished in", total)
 }
