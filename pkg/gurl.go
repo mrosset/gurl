@@ -3,7 +3,6 @@ package gurl
 import (
 	"bufio"
 	"errors"
-	"exp/terminal"
 	"fmt"
 	"io"
 	"log"
@@ -93,7 +92,7 @@ func (v *Client) Download(destdir string, rawurl string) (err error) {
 }
 
 func doProgressBar(start time.Time, downloaded, totalDownload int64, file string) {
-	twidth, _, err := terminal.GetSize(0)
+	twidth, err := TermWidth()
 	if err != nil {
 		log.Fatal(err)
 	}
