@@ -35,12 +35,24 @@ func TestLocal(t *testing.T) {
 	server.Close()
 }
 
-func TestRemote(t *testing.T) {
+func testRemote(t *testing.T) {
 	start := time.Now()
 	//url := "http://localhost/" + testfile
 	url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/archlinux-2011.08.19-core-dual.iso"
 	if err := Download(url, "./"); err != nil {
 		t.Errorf("Download : %v", err)
+	}
+	total := time.Now().Sub(start)
+	fmt.Println("Finished in", total)
+}
+
+
+func TestRemoteNoneExists(t *testing.T) {
+	start := time.Now()
+	//url := "http://localhost/" + testfile
+	url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/randome"
+	if err := Download(url, "./"); err == nil {
+		t.Errorf("Download : %v", "should be nil")
 	}
 	total := time.Now().Sub(start)
 	fmt.Println("Finished in", total)
