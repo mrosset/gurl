@@ -29,7 +29,7 @@ type Client struct {
 	ProgressHandle func(time.Time, int64, int64, string)
 }
 
-func (v *Client) Download(destdir string, rawurl string) (err error) {
+func (v *Client) Download(rawurl, destdir string) (err error) {
 	defer func() {
 		if recover() != nil {
 		}
