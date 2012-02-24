@@ -27,8 +27,7 @@ func TestLocal(t *testing.T) {
 	start := time.Now()
 	server := httptest.NewServer(&testHandler{})
 	url := server.URL + testfile
-	gurl := new(Client)
-	if err := gurl.Download(url, "./"); err != nil {
+	if err := Download(url, "./"); err != nil {
 		t.Errorf("Download : %v", err)
 	}
 	total := time.Now().Sub(start)
@@ -40,8 +39,7 @@ func TestRemote(t *testing.T) {
 	start := time.Now()
 	//url := "http://localhost/" + testfile
 	url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/archlinux-2011.08.19-core-dual.iso"
-	gurl := new(Client)
-	if err := gurl.Download(url, "./"); err != nil {
+	if err := Download(url, "./"); err != nil {
 		t.Errorf("Download : %v", err)
 	}
 	total := time.Now().Sub(start)

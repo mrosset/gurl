@@ -22,30 +22,27 @@ var (
 	println = fmt.Println
 	Debug   = false
 	buf     = bufio.NewWriter(os.Stderr)
+	client  *http.Client
 )
 
-type Client struct {
-	client         *http.Client
-	ProgressHandle func(time.Time, int64, int64, string)
+func init() {
+	client = new(http.Client)
 }
 
-func (v *Client) Download(rawurl, destdir string) (err error) {
+type ProgressFunc func(time.Time, int64, int64, string)
+
+func Download(rawurl, destdir string) (err error) {
 	defer func() {
 		if recover() != nil {
 		}
 	}()
-	if v.client == nil {
-		v.client = new(http.Client)
-	}
-	if v.ProgressHandle == nil {
-		v.ProgressHandle = doProgress
-	}
+	progress := doProgress
 	req, err := buildRequest("GET", rawurl)
 	if err != nil {
 		return err
 	}
 	debugRequest(req)
-	res, err := v.client.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -70,13 +67,13 @@ func (v *Client) Download(rawurl, destdir string) (err error) {
 		select {
 		case <-tick:
 			if res.ContentLength > 0 {
-				v.ProgressHandle(start, downloaded, res.ContentLength, fpath)
+				progress(start, downloaded, res.ContentLength, fpath)
 			}
 		default:
 		}
 		if err == io.EOF {
 			if res.ContentLength > 0 {
-				v.ProgressHandle(start, downloaded, res.ContentLength, fpath)
+				progress(start, downloaded, res.ContentLength, fpath)
 			} else {
 				fmt.Printf("%v done.\n", fpath)
 			}
