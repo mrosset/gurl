@@ -1,36 +1,20 @@
 package gurl
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
-	"strconv"
-	"strings"
-	"time"
 	"util/console"
 )
 
 var (
-	printf  = fmt.Printf
-	fprintf = fmt.Fprintf
-	println = fmt.Println
-	Debug   = false
-	buf     = bufio.NewWriter(os.Stderr)
-	client  *http.Client
-)
-
-func init() {
+	Debug  = false
 	client = new(http.Client)
-}
-
-type ProgressFunc func(time.Time, int64, int64, string)
+)
 
 func Download(rawurl, destdir string) (err error) {
 	defer func() {
@@ -41,7 +25,6 @@ func Download(rawurl, destdir string) (err error) {
 	if err != nil {
 		return err
 	}
-	debugRequest(req)
 	res, err := client.Do(req)
 	if err != nil {
 		return err
@@ -50,7 +33,6 @@ func Download(rawurl, destdir string) (err error) {
 		return errors.New("Error status " + res.Status)
 	}
 	defer res.Body.Close()
-	debugResponse(res)
 	fpath := path.Join(destdir, path.Base(rawurl))
 	fd, err := os.Create(fpath)
 	defer fd.Close()
@@ -59,6 +41,7 @@ func Download(rawurl, destdir string) (err error) {
 	return err
 }
 
+/*
 func doProgressBar(start time.Time, downloaded, totalDownload int64, file string) {
 	twidth, err := TermWidth()
 	if err != nil {
@@ -94,7 +77,7 @@ func doProgress(start time.Time, downloaded, totalDownload int64, file string) {
 	fmt.Fprintf(buf, "\r%-40.40s %3.3s%% %v", file, strconv.Itoa(percent), speed(bps))
 	buf.Flush()
 }
-
+*/
 // Receiving objects:   2% (41013/2050606), 14.90 MiB | 1.03 MiB/s
 
 func buildRequest(method, rawurl string) (*http.Request, error) {
@@ -127,18 +110,4 @@ func speed(bint int) string {
 		return fmt.Sprintf("%5.1fGB/s", b/1024/1024/1024)
 	}
 	return fmt.Sprintf("%5.1fGB/s", b/1024/1024/1024)
-}
-
-func debugRequest(req *http.Request) {
-	if Debug {
-		b, _ := httputil.DumpRequest(req, false)
-		os.Stderr.Write(b)
-	}
-}
-
-func debugResponse(res *http.Response) {
-	if Debug {
-		b, _ := httputil.DumpResponse(res, false)
-		os.Stderr.Write(b)
-	}
 }
