@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"util/console"
 )
 
 var (
@@ -36,7 +37,6 @@ func Download(rawurl, destdir string) (err error) {
 		if recover() != nil {
 		}
 	}()
-	progress := doProgress
 	req, err := buildRequest("GET", rawurl)
 	if err != nil {
 		return err
@@ -52,39 +52,10 @@ func Download(rawurl, destdir string) (err error) {
 	defer res.Body.Close()
 	debugResponse(res)
 	fpath := path.Join(destdir, path.Base(rawurl))
-	f, err := os.Create(fpath)
-	defer f.Close()
-	var downloaded int64
-	start := time.Now()
-	tick := time.Tick(1e09)
-	for {
-		b := make([]byte, 1024)
-		read, err := res.Body.Read(b)
-		if err != nil && err != io.EOF {
-			return err
-		}
-		downloaded += int64(read)
-		select {
-		case <-tick:
-			if res.ContentLength > 0 {
-				progress(start, downloaded, res.ContentLength, fpath)
-			}
-		default:
-		}
-		if err == io.EOF {
-			if res.ContentLength > 0 {
-				progress(start, downloaded, res.ContentLength, fpath)
-			} else {
-				fmt.Printf("%v done.\n", fpath)
-			}
-			break
-		}
-		_, err = f.Write(b[0:read])
-		if err != nil {
-			return err
-		}
-	}
-	fmt.Println()
+	fd, err := os.Create(fpath)
+	defer fd.Close()
+	pw := console.NewProgressBarWriter(res.ContentLength, fd)
+	_, err = io.Copy(pw, res.Body)
 	return err
 }
 

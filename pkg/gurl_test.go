@@ -32,7 +32,8 @@ func TestLocal(t *testing.T) {
 
 func TestRemote(t *testing.T) {
 	//url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/archlinux-2011.08.19-core-dual.iso"
-	url := "http://localhost:8080/src/bash-4.2.tar.gz"
+	//url := "http://localhost:8080/src/bash-4.2.tar.gz"
+	url := "http://localhost:8080/src/Mac.OSX.Lion.10.7.2.dmg"
 	if err := Download(url, "./"); err != nil {
 		t.Errorf("Download : %v", err)
 	}
