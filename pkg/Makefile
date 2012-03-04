@@ -1,7 +1,5 @@
-TARG=gurl
-GOFMT=gofmt -l -w
-
 all:
+	go fmt
 	go build
 
 test:
@@ -10,6 +8,8 @@ test:
 install:
 	go install
 
-format:
-	    ${GOFMT} .
+
+clean:
+	go clean
+	rm *.gz *.iso
 
