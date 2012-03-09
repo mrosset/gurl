@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"util/console"
+	"util/file"
 )
 
 var (
@@ -17,10 +18,9 @@ var (
 )
 
 func Download(rawurl, destdir string) (err error) {
-	defer func() {
-		if recover() != nil {
-		}
-	}()
+	if !file.Exists(destdir) {
+		return fmt.Errorf("dir %s does not exists.", destdir)
+	}
 	req, err := buildRequest("GET", rawurl)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func Download(rawurl, destdir string) (err error) {
 	fpath := path.Join(destdir, path.Base(rawurl))
 	fd, err := os.Create(fpath)
 	defer fd.Close()
-	pw := console.NewProgressBarWriter(res.ContentLength, fd)
+	pw := console.NewProgressBarWriter(path.Base(rawurl), res.ContentLength, fd)
 	_, err = io.Copy(pw, res.Body)
 	return err
 }

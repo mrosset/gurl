@@ -2,6 +2,7 @@ package gurl
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -27,22 +28,24 @@ func TestLocal(t *testing.T) {
 	if err := Download(url, "./"); err != nil {
 		t.Errorf("Download : %v", err)
 	}
+	fmt.Println()
 	server.Close()
 }
 
 func TestRemote(t *testing.T) {
 	//url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/archlinux-2011.08.19-core-dual.iso"
-	//url := "http://localhost:8080/src/bash-4.2.tar.gz"
-	url := "http://localhost:8080/src/Mac.OSX.Lion.10.7.2.dmg"
+	url := "http://samba.org/ftp/ccache/ccache-3.1.7.tar.gz"
 	if err := Download(url, "./"); err != nil {
 		t.Errorf("Download : %v", err)
 	}
+	fmt.Println()
 }
 
-func testRemoteNoneExists(t *testing.T) {
-	url := "http://localhost:8080/src/bash-4.2.tar.gz"
+func TestHttpd(t *testing.T) {
+	url := "http://localhost:8080/bash-4.2.tar.gz"
 	//url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/randome"
 	if err := Download(url, "./"); err == nil {
 		t.Errorf("Download : %v", "should be nil")
 	}
+	fmt.Println()
 }
