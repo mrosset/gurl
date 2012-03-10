@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"os/exec"
 	"strconv"
 	"testing"
 )
@@ -32,13 +34,18 @@ func TestLocal(t *testing.T) {
 	server.Close()
 }
 
+//var cities = []string{"tokyo", "london", "newark", "atlanta", "dallas", "fremont"}
+var cities = []string{"fremont"}
+
 func TestRemote(t *testing.T) {
-	//url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/archlinux-2011.08.19-core-dual.iso"
-	url := "http://samba.org/ftp/ccache/ccache-3.1.7.tar.gz"
-	if err := Download(url, "./"); err != nil {
-		t.Errorf("Download : %v", err)
+	//cities := []string{"fremont"}
+	for _, city := range cities {
+		url := fmt.Sprintf("http://%s1.linode.com/100MB-%s.bin", city, city)
+		if err := Download(url, "./"); err != nil {
+			t.Errorf("Download : %v", err)
+		}
+		fmt.Println()
 	}
-	fmt.Println()
 }
 
 func TestHttpd(t *testing.T) {

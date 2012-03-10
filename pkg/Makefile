@@ -1,15 +1,15 @@
 all:
-	go fmt
-	go build
+	@go fmt
+	@go build
 
 test:
-	go test
+	@go test
 
 install:
-	go install
+	@go install
 
 
 clean:
-	go clean
-	rm *.gz *.iso
+	@go clean
+	@rm *.gz *.bin
 
