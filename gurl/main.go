@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"gurl/pkg"
+	"log"
 	"os"
 )
 
@@ -11,7 +13,9 @@ func main() {
 		os.Exit(1)
 	}
 	url := os.Args[1]
-	if err := gurl.Download(url,"./"); err != nil {
-		println(err)
+	err := gurl.Download(url, "./")
+	if err != nil {
+		log.Fatal(err)
 	}
+	fmt.Println()
 }
