@@ -7,6 +7,11 @@ import (
 	"os"
 )
 
+func init() {
+	log.SetPrefix("gurl: ")
+	log.SetFlags(0)
+}
+
 func main() {
 	if len(os.Args) <= 1 {
 		println("Error no url specified")
