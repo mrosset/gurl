@@ -1,7 +1,6 @@
 package gurl
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,8 +12,9 @@ import (
 )
 
 var (
-	Debug  = false
-	client = new(http.Client)
+	Debug          = false
+	client         = new(http.Client)
+	ProgressPrefix = ""
 )
 
 func Download(rawurl, destdir string) (err error) {
@@ -23,47 +23,30 @@ func Download(rawurl, destdir string) (err error) {
 	}
 	req, err := buildRequest("GET", rawurl)
 	if err != nil {
-		return err
+		return
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return
 	}
 	if res.StatusCode != 200 {
-		return errors.New("Error status " + res.Status)
+		return fmt.Errorf("Error status %s %s", res.Status, rawurl)
 	}
 	defer res.Body.Close()
 	fpath := path.Join(destdir, path.Base(rawurl))
 	fd, err := os.Create(fpath)
 	defer fd.Close()
-	pw := console.NewProgressBarWriter(path.Base(rawurl), res.ContentLength, fd)
+	prefix := path.Base(rawurl)
+	if ProgressPrefix != "" {
+		prefix = ProgressPrefix
+	}
+	pw := console.NewProgressBarWriter(prefix, res.ContentLength, fd)
 	_, err = io.Copy(pw, res.Body)
-	return err
+	return
 }
 
 /*
-func doProgressBar(start time.Time, downloaded, totalDownload int64, file string) {
-	twidth, err := TermWidth()
-	if err != nil {
-		log.Fatal(err)
-	}
-	var (
-		width    int = int((int64(twidth) / 2)) - 9
-		percent  int = int((downloaded * 100) / totalDownload)
-		progress int = int((width * percent) / 100)
-		bps      int
-	)
-	tick := time.Now().Sub(start)
-	if tick == 0 {
-		tick++
-	}
-	bps = int(downloaded / int64(tick.Seconds()))
-	bar := strings.Repeat("#", progress)
-	stats := fmt.Sprintf("%3.3s%% %9.9s", strconv.Itoa(percent), speed(bps))
-	fmt.Fprintf(buf, "\r%-*.*s [%-*s] %s", width, width, file, width, bar, stats)
-	buf.Flush()
-}
-
+// Receiving objects:   2% (41013/2050606), 14.90 MiB | 1.03 MiB/s
 func doProgress(start time.Time, downloaded, totalDownload int64, file string) {
 	var (
 		percent int = int((downloaded * 100) / totalDownload)
@@ -78,7 +61,6 @@ func doProgress(start time.Time, downloaded, totalDownload int64, file string) {
 	buf.Flush()
 }
 */
-// Receiving objects:   2% (41013/2050606), 14.90 MiB | 1.03 MiB/s
 
 func buildRequest(method, rawurl string) (*http.Request, error) {
 	var err error
@@ -93,21 +75,4 @@ func buildRequest(method, rawurl string) (*http.Request, error) {
 		return nil, err
 	}
 	return req, nil
-}
-
-func speed(bint int) string {
-	var (
-		b float32 = float32(bint)
-	)
-	switch {
-	case b < 1024:
-		return fmt.Sprintf("%vB/s", b)
-	case b < 1024*1000:
-		return fmt.Sprintf("%5.1fKB/s", b/1024)
-	case b < 1024*1024*1000:
-		return fmt.Sprintf("%5.1fMB/s", b/1024/1024)
-	default:
-		return fmt.Sprintf("%5.1fGB/s", b/1024/1024/1024)
-	}
-	return fmt.Sprintf("%5.1fGB/s", b/1024/1024/1024)
 }
