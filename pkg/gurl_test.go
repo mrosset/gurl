@@ -1,56 +1,45 @@
 package gurl
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path"
 	"strconv"
 	"testing"
+)
+
+var (
+	//cities = []string{"tokyo", "london", "newark", "atlanta", "dallas", "fremont"}
+	cities    = []string{"fremont"}
+	linFmt    = "http://%s1.linode.com/100MB-%s.bin"
+	server    = httptest.NewServer(&testHandler{})
+	local_url = fmt.Sprintf("%s/%s", server.URL, "foobar.tar.gz")
 )
 
 type testHandler struct {
 }
 
 func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	b := new(bytes.Buffer)
-	b.Write(make([]byte, 1024*1024))
+	size := 1024 * 1024
+	b := make([]byte, size)
 	w.Header().Set("Accept-Ranges", "bytes")
-	w.Header().Set("Content-Length", strconv.Itoa(len(b.Bytes())))
-	io.Copy(w, b)
+	w.Header().Set("Content-Length", strconv.Itoa(size))
+	w.Write(b)
 }
 
 func TestLocal(t *testing.T) {
-	testfile := "/foobar.tar.gz"
-	server := httptest.NewServer(&testHandler{})
-	url := server.URL + testfile
-	if err := Download(url, "./"); err != nil {
+	defer os.Remove(path.Base(local_url))
+	if err := Download("./", local_url); err != nil {
 		t.Errorf("Download : %v", err)
 	}
-	fmt.Println()
-	server.Close()
 }
 
-//var cities = []string{"tokyo", "london", "newark", "atlanta", "dallas", "fremont"}
-var cities = []string{"fremont"}
-
-func TestRemote(t *testing.T) {
-	//cities := []string{"fremont"}
-	for _, city := range cities {
-		url := fmt.Sprintf("http://%s1.linode.com/100MB-%s.bin", city, city)
-		if err := Download(url, "./"); err != nil {
-			t.Errorf("Download : %v", err)
-		}
-		fmt.Println()
+func TestLocalAll(t *testing.T) {
+	urls := []string{local_url, local_url}
+	defer os.Remove(path.Base(local_url))
+	if err := DownloadAll("./", urls); err != nil {
+		t.Errorf("Download : %v", err)
 	}
-}
-
-func TestHttpd(t *testing.T) {
-	url := "http://localhost:8080/bash-4.2.tar.gz"
-	//url := "http://ftp.osuosl.org/pub/archlinux/iso/2011.08.19/randome"
-	if err := Download(url, "./"); err == nil {
-		t.Errorf("Download : %v", "should be nil")
-	}
-	fmt.Println()
 }
