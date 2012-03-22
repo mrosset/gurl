@@ -43,3 +43,11 @@ func TestLocalAll(t *testing.T) {
 		t.Errorf("Download : %v", err)
 	}
 }
+
+func testRemote(t *testing.T) {
+	for _, c := range cities {
+		if err := Download("./", fmt.Sprintf(linFmt, c, c)); err != nil {
+			t.Errorf("Download : %v", err)
+		}
+	}
+}

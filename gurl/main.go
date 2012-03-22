@@ -1,7 +1,7 @@
 package main
 
 import (
-	"gurl/pkg"
+	"gurl"
 	"log"
 	"os"
 )
@@ -12,11 +12,12 @@ func init() {
 }
 
 func main() {
-	if len(os.Args) <= 1 {
+	args := os.Args[1:]
+	if len(args) == 0 {
 		println("Error no urls specified")
 		os.Exit(1)
 	}
-	err := gurl.DownloadAll("./", os.Args)
+	err := gurl.DownloadAll("./", args)
 	if err != nil {
 		log.Fatal(err)
 	}
