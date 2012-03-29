@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"util/console"
-	"util/file"
+	"github.com/str1ngs/util/console"
+	"github.com/str1ngs/util/file"
 )
 
 var (
