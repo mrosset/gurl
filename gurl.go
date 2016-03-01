@@ -2,13 +2,13 @@ package gurl
 
 import (
 	"fmt"
+	"github.com/str1ngs/util/console"
+	"github.com/str1ngs/util/file"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
-	"github.com/str1ngs/util/console"
-	"github.com/str1ngs/util/file"
 )
 
 var (
@@ -17,6 +17,22 @@ var (
 	ProgressPrefix = ""
 )
 
+// Interface to handle Gets
+type Downloader interface {
+	Get(out string, url string) error
+}
+
+// Provides Downloader interface for http and https
+type Http struct {
+}
+
+// Provides Downloader Get method
+func (h Http) Get(p string, url string) error {
+	return nil
+}
+
+// Download a slice of URL's to destination directory
+// TODO: make this concurrent
 func DownloadAll(destdir string, rawurls []string) (err error) {
 	for _, rawurl := range rawurls {
 		err = Download(destdir, rawurl)
@@ -27,10 +43,20 @@ func DownloadAll(destdir string, rawurls []string) (err error) {
 	return
 }
 
-func Download(destdir, rawurl string) (err error) {
+// Returns a new Downloader. With the right Downloader interface for scheme.
+// TODO: this breaks Download singleton. however we could use NewDownloader(url).Get()
+func NewDownloader(url string) {
+}
+
+// We should use an interface for downloading. This would allow for different protocols.
+// eg. git:// ftp://
+
+// Download url to destdir
+func OldDownload(destdir, rawurl string) (err error) {
 	if !file.Exists(destdir) {
 		return fmt.Errorf("dir %s does not exists.", destdir)
 	}
+	// building a request every time is annoying. Why even use this
 	req, err := buildRequest("GET", rawurl)
 	if err != nil {
 		return
@@ -55,23 +81,6 @@ func Download(destdir, rawurl string) (err error) {
 	_, err = io.Copy(pw, res.Body)
 	return
 }
-
-/*
-// Receiving objects:   2% (41013/2050606), 14.90 MiB | 1.03 MiB/s
-func doProgress(start time.Time, downloaded, totalDownload int64, file string) {
-	var (
-		percent int = int((downloaded * 100) / totalDownload)
-		bps     int
-	)
-	tick := time.Now().Sub(start)
-	if tick == 0 {
-		tick++
-	}
-	bps = int(downloaded / int64(tick.Seconds()))
-	fmt.Fprintf(buf, "\r%-40.40s %3.3s%% %v", file, strconv.Itoa(percent), speed(bps))
-	buf.Flush()
-}
-*/
 
 func buildRequest(method, rawurl string) (*http.Request, error) {
 	var err error

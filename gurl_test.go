@@ -29,14 +29,16 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Write(b)
 }
 
-func TestLocal(t *testing.T) {
+// TODO: acctually test input and out puts. Rather then function
+func testLocal(t *testing.T) {
 	defer os.Remove(path.Base(local_url))
 	if err := Download("./", local_url); err != nil {
 		t.Errorf("Download : %v", err)
 	}
 }
 
-func TestLocalAll(t *testing.T) {
+// TODO: acctually test input and outputs. Rather then function
+func testLocalAll(t *testing.T) {
 	urls := []string{local_url, local_url}
 	defer os.Remove(path.Base(local_url))
 	if err := DownloadAll("./", urls); err != nil {
@@ -44,6 +46,7 @@ func TestLocalAll(t *testing.T) {
 	}
 }
 
+// TODO: large file download test is broken
 func testRemote(t *testing.T) {
 	for _, c := range cities {
 		if err := Download("./", fmt.Sprintf(linFmt, c, c)); err != nil {
