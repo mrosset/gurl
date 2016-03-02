@@ -29,10 +29,26 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.Write(b)
 }
 
+// Tests that NewDownloader returns a known Downloader
+func TestHttpInterface(t *testing.T) {
+	d := NewDownloader("./", "http://")
+	if _, ok := d.(Http); !ok {
+		t.Errorf("expected Http downloader got %T", d)
+	}
+
+	d = NewDownloader("./", "fail://")
+	if _, ok := d.(Unknown); !ok {
+		t.Errorf("expected Unknown downloader got %T", d)
+	}
+}
+
 // TODO: acctually test input and out puts. Rather then function
-func testLocal(t *testing.T) {
+func TestLocal(t *testing.T) {
 	defer os.Remove(path.Base(local_url))
 	if err := Download("./", local_url); err != nil {
+		t.Errorf("Download : %v", err)
+	}
+	if err := Download("./", "fail://"); err == nil {
 		t.Errorf("Download : %v", err)
 	}
 }
@@ -48,9 +64,9 @@ func testLocalAll(t *testing.T) {
 
 // TODO: large file download test is broken
 func testRemote(t *testing.T) {
-	for _, c := range cities {
+	/*for _, c := range cities {
 		if err := Download("./", fmt.Sprintf(linFmt, c, c)); err != nil {
-			t.Errorf("Download : %v", err)
+		t.Errorf("Download : %v", err)
 		}
-	}
+	}*/
 }
