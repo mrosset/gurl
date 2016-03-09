@@ -30,15 +30,26 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 // Tests that NewDownloader returns a known Downloader
-func TestHttpInterface(t *testing.T) {
-	d := NewDownloader("./", "http://")
-	if _, ok := d.(Http); !ok {
-		t.Errorf("expected Http downloader got %T", d)
+func TestInterfaceTypes(t *testing.T) {
+	sc := []string{
+		"http://",
+		"https://",
+		"git://",
+		"git+http://",
+		"git+https://",
 	}
+	for _, i := range sc {
+		d := NewDownloader("./", i)
+		if _, ok := d.(Unknown); ok {
+			t.Errorf("unkown downloader for scheme %s", i)
+		}
+	}
+}
 
-	d = NewDownloader("./", "fail://")
-	if _, ok := d.(Unknown); !ok {
-		t.Errorf("expected Unknown downloader got %T", d)
+func TestGitInterface(t *testing.T) {
+	err := Download("./", "git://github.com/str1ngs/gurl")
+	if err != nil {
+		t.Error(err)
 	}
 }
 

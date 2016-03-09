@@ -30,6 +30,7 @@ type Http struct {
 }
 
 // Provides Downloader Get method
+// TODO: simplify this method
 func (h Http) Get() error {
 	if !file.Exists(h.destdir) {
 		return fmt.Errorf("dir %s does not exists.", h.destdir)
@@ -58,5 +59,4 @@ func (h Http) Get() error {
 	defer pw.Close()
 	_, err = io.Copy(pw, res.Body)
 	return nil
-
 }
