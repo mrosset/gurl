@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/str1ngs/gurl"
+	"github.com/mrosset/gurl"
 	"log"
 	"os"
 )
