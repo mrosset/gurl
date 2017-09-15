@@ -2,13 +2,13 @@ package gurl
 
 import (
 	"fmt"
+	"github.com/mrosset/util/console"
+	"github.com/mrosset/util/file"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
-	"github.com/str1ngs/util/console"
-	"github.com/str1ngs/util/file"
 )
 
 var (
