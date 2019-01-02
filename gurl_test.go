@@ -11,9 +11,6 @@ import (
 )
 
 var (
-	//cities = []string{"tokyo", "london", "newark", "atlanta", "dallas", "fremont"}
-	cities    = []string{"fremont"}
-	linFmt    = "http://%s1.linode.com/100MB-%s.bin"
 	server    = httptest.NewServer(&testHandler{})
 	local_url = fmt.Sprintf("%s/%s", server.URL, "foobar.tar.gz")
 )
@@ -44,10 +41,9 @@ func TestLocalAll(t *testing.T) {
 	}
 }
 
-func testRemote(t *testing.T) {
-	for _, c := range cities {
-		if err := Download("./", fmt.Sprintf(linFmt, c, c)); err != nil {
-			t.Errorf("Download : %v", err)
-		}
+func TestTimeOut(t *testing.T) {
+	err := Download("./", "https://127.0.0.1:7777")
+	if err == nil {
+		t.Errorf("Expected Client to timeout.")
 	}
 }

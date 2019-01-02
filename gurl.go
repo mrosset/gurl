@@ -9,11 +9,14 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"time"
 )
 
 var (
-	Debug          = false
-	client         = new(http.Client)
+	Debug  = false
+	client = &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	ProgressPrefix = ""
 )
 
