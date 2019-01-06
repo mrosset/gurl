@@ -15,7 +15,7 @@ import (
 var (
 	Debug  = false
 	client = &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 15 * time.Second,
 	}
 	ProgressPrefix = ""
 )
