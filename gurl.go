@@ -30,7 +30,11 @@ func DownloadAll(destdir string, rawurls []string) (err error) {
 	return
 }
 
-func Download(destdir, rawurl string) (err error) {
+func Download(destdir, rawurl string) error {
+	return NameDownload(destdir, rawurl, path.Base(rawurl))
+}
+
+func NameDownload(destdir, rawurl, name string) (err error) {
 	if !file.Exists(destdir) {
 		return fmt.Errorf("dir %s does not exists.", destdir)
 	}
@@ -46,7 +50,7 @@ func Download(destdir, rawurl string) (err error) {
 		return fmt.Errorf("Error status %s %s", res.Status, rawurl)
 	}
 	defer res.Body.Close()
-	fpath := path.Join(destdir, path.Base(rawurl))
+	fpath := path.Join(destdir, name)
 	fd, err := os.Create(fpath)
 	defer fd.Close()
 	prefix := path.Base(rawurl)
