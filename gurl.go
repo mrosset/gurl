@@ -15,7 +15,7 @@ import (
 var (
 	Debug  = false
 	client = &http.Client{
-		Timeout: 15 * time.Second,
+		Timeout: 90 * time.Second,
 	}
 	ProgressPrefix = ""
 )
@@ -60,6 +60,9 @@ func NameDownload(destdir, rawurl, name string) (err error) {
 	pw := console.NewProgressBarWriter(prefix, res.ContentLength, fd)
 	defer pw.Close()
 	_, err = io.Copy(pw, res.Body)
+	if err != nil {
+		os.Remove(fpath)
+	}
 	return
 }
 
