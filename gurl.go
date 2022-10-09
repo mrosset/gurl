@@ -31,10 +31,14 @@ func DownloadAll(destdir string, rawurls []string) (err error) {
 }
 
 func Download(destdir, rawurl string) error {
-	return NameDownload(destdir, rawurl, path.Base(rawurl))
+	return NameDownload(destdir, rawurl, path.Base(rawurl), false)
 }
 
-func NameDownload(destdir, rawurl, name string) (err error) {
+func DownloadHideAfter(destdir, rawurl string) error {
+	return NameDownload(destdir, rawurl, path.Base(rawurl), true)
+}
+
+func NameDownload(destdir, rawurl, name string, hide bool) (err error) {
 	if !file.Exists(destdir) {
 		return fmt.Errorf("dir %s does not exists.", destdir)
 	}
@@ -58,6 +62,7 @@ func NameDownload(destdir, rawurl, name string) (err error) {
 		prefix = ProgressPrefix
 	}
 	pw := console.NewProgressBarWriter(prefix, res.ContentLength, fd)
+	pw.Bar.RemoveWhenDone = hide
 	defer pw.Close()
 	_, err = io.Copy(pw, res.Body)
 	if err != nil {

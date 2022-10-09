@@ -32,6 +32,8 @@ github.com/mrosset/util v0.0.0-20221008213331-a85795018e0e h1:X95P3RlUIBjQHGLa7z
 github.com/mrosset/util v0.0.0-20221008213331-a85795018e0e/go.mod h1:QX5/x6PouqJhAqum5DkbIF0nNrjir8rir7llZkC4PGo=
 github.com/mrosset/util v0.0.1 h1:f5pPiyeIq5HfwtGq3vqVpoLc4B8V9cfGxml2NtVYwJE=
 github.com/mrosset/util v0.0.1/go.mod h1:Qvwzrw/4NzDxvKZX10/pMwUIj2gcZMOLR2jeCJXx8aI=
+github.com/mrosset/util v0.0.2-0.20221009014018-6e224258489f h1:qPDlfoJt6NKhmhTtzy1mIhsuBO2/4qSTVONfVUgWl+Q=
+github.com/mrosset/util v0.0.2-0.20221009014018-6e224258489f/go.mod h1:Qvwzrw/4NzDxvKZX10/pMwUIj2gcZMOLR2jeCJXx8aI=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pterm/pterm v0.12.27/go.mod h1:PhQ89w4i95rhgE+xedAoqous6K9X+r6aSOI2eFF7DZI=
 github.com/pterm/pterm v0.12.29/go.mod h1:WI3qxgvoQFFGKGjGnJR849gU0TsEOvKn5Q8LlY1U7lg=

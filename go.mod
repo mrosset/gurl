@@ -2,7 +2,7 @@ module github.com/mrosset/gurl
 
 go 1.18
 
-require github.com/mrosset/util v0.0.1
+require github.com/mrosset/util v0.0.2-0.20221009014018-6e224258489f
 
 require (
 	atomicgo.dev/cursor v0.1.1 // indirect
